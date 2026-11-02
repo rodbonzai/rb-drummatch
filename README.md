@@ -1,7 +1,7 @@
 # KitMatch (v1.0.0-beta.1)
 
 > **Intelligent Acoustic Complementarity Drumkit Matching & Auditioning System**  
-
+> **Sistema inteligente de emparejamiento y previsualización de kits de batería basado en la complementariedad acústica**  
 ---
 
 ## 🥁 Visión general
