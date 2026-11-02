@@ -1,0 +1,20 @@
+# Build directories
+build/
+cmake-build-*/
+.cache/
+
+# OS files
+.DS_Store
+**/.DS_Store
+
+# User settings
+*.user
+*.xcuserdatad
+*.xcworkspace
+*.xcodeproj
+
+# Temporary / Database files
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
