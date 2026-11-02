@@ -5,16 +5,26 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# macOS Universal Binary (Apple Silicon arm64 + Intel x86_64)
+if (APPLE)
+    if (NOT CMAKE_OSX_ARCHITECTURES)
+        set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "macOS architectures" FORCE)
+    endif()
+    if (NOT CMAKE_OSX_DEPLOYMENT_TARGET)
+        set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "macOS deployment target" FORCE)
+    endif()
+endif()
+
 # JUCE Framework autocontenido en el repositorio
 add_subdirectory(JUCE)
 
-juce_add_gui_app(DrumMatch
+juce_add_gui_app(KitMatch
     PRODUCT_NAME "KitMatch"
     VERSION "1.0.0"
     BUNDLE_ID "com.rodbonzai.kitmatch"
 )
 
-target_sources(DrumMatch PRIVATE
+target_sources(KitMatch PRIVATE
     Source/Main.cpp
     Source/Domain/InstrumentCategory.h
     Source/Domain/Sample.h
@@ -56,19 +66,43 @@ target_sources(DrumMatch PRIVATE
     Source/UI/MainComponent.cpp
 )
 
-target_include_directories(DrumMatch PRIVATE
+target_include_directories(KitMatch PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Source
 )
 
-target_compile_definitions(DrumMatch PRIVATE
-    JUCE_APPLICATION_NAME_STRING="DrumMatch"
-    JUCE_APPLICATION_VERSION_STRING="1.0.0"
+target_compile_definitions(KitMatch PRIVATE
+    JUCE_APPLICATION_NAME_STRING="KitMatch"
+    JUCE_APPLICATION_VERSION_STRING="1.0.0-beta.1"
     JUCE_USE_CURL=0
     JUCE_WEB_BROWSER=0
 )
 
-target_link_libraries(DrumMatch PRIVATE
-    sqlite3
+# Cross-platform SQLite3 support:
+# 1. System/vcpkg SQLite3 if available
+# 2. Native macOS system library
+# 3. Automatic SQLite amalgamation fetch fallback for Windows/other platforms
+find_package(SQLite3 QUIET)
+
+if (TARGET SQLite3::SQLite3)
+    set(SQLITE_TARGET SQLite3::SQLite3)
+elseif (TARGET SQLite::SQLite3)
+    set(SQLITE_TARGET SQLite::SQLite3)
+elseif (APPLE)
+    set(SQLITE_TARGET sqlite3)
+else()
+    include(FetchContent)
+    FetchContent_Declare(
+        sqlite3_amalgamation
+        URL https://www.sqlite.org/2024/sqlite-amalgamation-3450200.zip
+    )
+    FetchContent_MakeAvailable(sqlite3_amalgamation)
+    add_library(sqlite3_vendored STATIC ${sqlite3_amalgamation_SOURCE_DIR}/sqlite3.c)
+    target_include_directories(sqlite3_vendored PUBLIC ${sqlite3_amalgamation_SOURCE_DIR})
+    set(SQLITE_TARGET sqlite3_vendored)
+endif()
+
+target_link_libraries(KitMatch PRIVATE
+    ${SQLITE_TARGET}
     juce::juce_core
     juce::juce_data_structures
     juce::juce_events

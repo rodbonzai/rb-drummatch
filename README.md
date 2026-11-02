@@ -52,15 +52,36 @@ En lugar de limitarse a buscar sonidos "parecidos", KitMatch analiza las propied
 git clone https://github.com/rodbonzai/rb-drummatch.git
 cd rb-drummatch
 
-# 2. Configurar con CMake
+# 2. Configurar con CMake (compila binario universal para macOS: arm64 + x86_64)
 cmake -B build -DCMAKE_BUILD_TYPE=Release
 
 # 3. Compilar la aplicación
 cmake --build build --config Release -j4
 
-# 4. Ejecutar
-open build/DrumMatch_artefacts/Release/KitMatch.app
+# 4. Empaquetar el instalador DMG para macOS:
+./scripts/package_macos.sh
+# El archivo resultante quedará en: dist/KitMatch-v1.0.0-beta.1-macOS-Universal.dmg
+
+# 5. Ejecutar directamente
+open build/KitMatch_artefacts/Release/KitMatch.app
 ```
+
+### Compilación en Windows (Visual Studio 2022 / C++20):
+```powershell
+# 1. Configurar
+cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+
+# 2. Compilar
+cmake --build build --config Release --parallel
+
+# 3. Empaquetar instalador (requiere Inno Setup 6):
+ISCC.exe scripts\windows_installer.iss
+```
+
+### 📦 Instaladores y Releases automáticos (CI/CD)
+El proyecto cuenta con integración continua en GitHub Actions (`.github/workflows/build-release.yml`):
+- **macOS Universal (`arm64` Apple Silicon + `x86_64` Intel):** Genera `KitMatch-v1.0.0-beta.1-macOS-Universal.dmg`
+- **Windows x64:** Genera `KitMatch-v1.0.0-beta.1-Windows-x64-Setup.exe` y `KitMatch-v1.0.0-beta.1-Windows-x64.zip`
 
 ---
 

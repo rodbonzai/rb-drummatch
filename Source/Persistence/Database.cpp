@@ -14,13 +14,32 @@ Database::~Database()
 juce::File Database::getDefaultDatabaseFile()
 {
     const auto appDataDir = juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
+#if JUCE_MAC
                                  .getChildFile("Application Support")
-                                 .getChildFile("DrumMatch");
+#endif
+                                 .getChildFile("KitMatch");
 
     if (!appDataDir.isDirectory())
         appDataDir.createDirectory();
 
-    return appDataDir.getChildFile("drummatch.db");
+    auto dbFile = appDataDir.getChildFile("kitmatch.db");
+
+    // Migration fallback: if kitmatch.db doesn't exist, check legacy drummatch.db
+    if (!dbFile.existsAsFile())
+    {
+        const auto legacyDir = juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
+#if JUCE_MAC
+                                     .getChildFile("Application Support")
+#endif
+                                     .getChildFile("DrumMatch");
+        const auto legacyDb = legacyDir.getChildFile("drummatch.db");
+        if (legacyDb.existsAsFile())
+        {
+            legacyDb.copyFileTo(dbFile);
+        }
+    }
+
+    return dbFile;
 }
 
 bool Database::open(const juce::File& dbFile)
