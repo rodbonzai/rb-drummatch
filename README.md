@@ -1,7 +1,6 @@
 # KitMatch (v1.0.0-beta.1)
 
 > **Intelligent Acoustic Complementarity Drumkit Matching & Auditioning System**  
-> Diseñado con estética de hardware retrofuturista inspirada en la legendaria **AKAI MPC 60**.
 
 ---
 
